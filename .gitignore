@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+*.db
+*.db-shm
+*.db-wal
+.env
+.pytest_cache/
+.ruff_cache/
+clients/ts/node_modules/
+clients/ts/dist/
+*.egg-info/
+build/

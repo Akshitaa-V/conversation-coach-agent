@@ -1,0 +1,152 @@
+{
+  "cases": [
+    {
+      "case": "planted_effect_cheap",
+      "planted_lift": 0.25,
+      "planted_cost_lift": 0.04,
+      "expected": "ship",
+      "control": "control",
+      "treatment": "treatment",
+      "n_control": 1500,
+      "n_treatment": 1500,
+      "mean_control": 3.0818,
+      "mean_treatment": 3.3343,
+      "diff": 0.2524,
+      "diff_ci": [
+        0.20298723893784656,
+        0.3016869128992275
+      ],
+      "p_value": 0.0,
+      "srm_p_value": 1.0,
+      "guardrail_rel_change": 0.0515,
+      "guardrail_rel_ci": [
+        0.03208698309779628,
+        0.07164314090369196
+      ],
+      "decision": "ship",
+      "reason": "primary metric improved and cost stays within the guardrail",
+      "n_per_arm_for_min_effect": 748,
+      "correct": true
+    },
+    {
+      "case": "planted_effect_costly",
+      "planted_lift": 0.25,
+      "planted_cost_lift": 0.3,
+      "expected": "hold",
+      "control": "control",
+      "treatment": "treatment",
+      "n_control": 1500,
+      "n_treatment": 1500,
+      "mean_control": 3.1053,
+      "mean_treatment": 3.3835,
+      "diff": 0.2782,
+      "diff_ci": [
+        0.22858740349189693,
+        0.33002660375994136
+      ],
+      "p_value": 0.0,
+      "srm_p_value": 1.0,
+      "guardrail_rel_change": 0.2918,
+      "guardrail_rel_ci": [
+        0.26774493562158547,
+        0.3172066711089995
+      ],
+      "decision": "hold",
+      "reason": "primary metric improved but cost may rise up to +32%",
+      "n_per_arm_for_min_effect": 767,
+      "correct": true
+    },
+    {
+      "case": "no_effect_costly",
+      "planted_lift": 0.0,
+      "planted_cost_lift": 0.25,
+      "expected": "kill",
+      "control": "control",
+      "treatment": "treatment",
+      "n_control": 2000,
+      "n_treatment": 2000,
+      "mean_control": 3.1191,
+      "mean_treatment": 3.094,
+      "diff": -0.0251,
+      "diff_ci": [
+        -0.07060775683595735,
+        0.01826178193971779
+      ],
+      "p_value": 0.2566,
+      "srm_p_value": 1.0,
+      "guardrail_rel_change": 0.2565,
+      "guardrail_rel_ci": [
+        0.23725016449752245,
+        0.2761733872415656
+      ],
+      "decision": "kill",
+      "reason": "the effect is below the 0.1 minimum worth shipping, even at the CI's upper end",
+      "n_per_arm_for_min_effect": 767,
+      "correct": true
+    },
+    {
+      "case": "too_few_sessions",
+      "planted_lift": 0.12,
+      "planted_cost_lift": 0.0,
+      "expected": "keep_running",
+      "control": "control",
+      "treatment": "treatment",
+      "n_control": 60,
+      "n_treatment": 60,
+      "mean_control": 3.2453,
+      "mean_treatment": 3.0908,
+      "diff": -0.1545,
+      "diff_ci": [
+        -0.4003589074876347,
+        0.0858413871808194
+      ],
+      "p_value": 0.2197,
+      "srm_p_value": 1.0,
+      "guardrail_rel_change": 0.0482,
+      "guardrail_rel_ci": [
+        -0.04073733756291572,
+        0.14435929323221924
+      ],
+      "decision": "keep_running",
+      "reason": "below the planned 738 units per arm; do not decide yet",
+      "n_per_arm_for_min_effect": 738,
+      "correct": true
+    },
+    {
+      "case": "broken_assignment",
+      "planted_lift": 0.25,
+      "planted_cost_lift": 0.04,
+      "expected": "invalid",
+      "control": "control",
+      "treatment": "treatment",
+      "n_control": 2150,
+      "n_treatment": 1850,
+      "mean_control": 3.0844,
+      "mean_treatment": 3.3556,
+      "diff": 0.2712,
+      "diff_ci": [
+        0.2259926422900383,
+        0.31439260309476535
+      ],
+      "p_value": 0.0,
+      "srm_p_value": 0.0,
+      "guardrail_rel_change": 0.047,
+      "guardrail_rel_ci": [
+        0.030579218716843014,
+        0.0630611859871218
+      ],
+      "decision": "invalid",
+      "reason": "sample ratio mismatch (p=2.1e-06); fix assignment before reading results",
+      "n_per_arm_for_min_effect": 772,
+      "correct": true
+    }
+  ],
+  "calibration": {
+    "runs": 400,
+    "n_per_arm": 1000,
+    "aa_false_ship_rate": 0.025,
+    "planted_lift": 0.15,
+    "ci_coverage": 0.9475,
+    "detection_rate": 0.9925
+  }
+}

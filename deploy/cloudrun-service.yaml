@@ -1,0 +1,67 @@
+# Cloud Run service definition (Knative format).
+# Apply with:  gcloud run services replace deploy/cloudrun-service.yaml --region "$REGION"
+# deploy.sh fills in PROJECT_ID, REGION and IMAGE before applying.
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: conversation-coach-agent
+  labels:
+    app: conversation-coach-agent
+spec:
+  template:
+    metadata:
+      annotations:
+        # Keep one warm instance so the first roleplay of the day has no cold start.
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "10"
+        # WebSocket roleplays keep their instance: in-memory conversation state stays local.
+        run.googleapis.com/sessionAffinity: "true"
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      serviceAccountName: coach-runtime@PROJECT_ID.iam.gserviceaccount.com
+      containerConcurrency: 80
+      # WebSocket connections live up to this long; a roleplay is a few minutes.
+      timeoutSeconds: 3600
+      containers:
+        - image: IMAGE
+          ports:
+            - name: http1
+              containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          env:
+            - name: PROVIDER_MODE
+              value: live
+            - name: CUSTOMER_MODELS
+              value: CUSTOMER_MODELS_VALUE
+            - name: COACH_MODELS
+              value: COACH_MODELS_VALUE
+            - name: JUDGE_MODELS
+              value: JUDGE_MODELS_VALUE
+            - name: ONLINE_EVAL_SAMPLE_RATE
+              value: "0.2"
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openai-api-key
+                  key: latest
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-api-key
+                  key: latest
+          startupProbe:
+            httpGet:
+              path: /readyz
+            periodSeconds: 2
+            failureThreshold: 15
+          livenessProbe:
+            httpGet:
+              path: /healthz
+            periodSeconds: 30
+  traffic:
+    - percent: 100
+      latestRevision: true

@@ -1,0 +1,23 @@
+{
+  "displayName": "Coach: feedback requests failing",
+  "documentation": {
+    "content": "SERVICE_NAME returned 503 on feedback: every coach model failed or the answer stayed invalid after repair. Trainees see 'retry shortly'. Check the coach model chain and the 'feedback failed' log entries.",
+    "mimeType": "text/markdown"
+  },
+  "combiner": "OR",
+  "conditions": [
+    {
+      "displayName": "any feedback failure for 5 minutes",
+      "conditionThreshold": {
+        "filter": "resource.type = \"cloud_run_revision\" AND metric.type = \"logging.googleapis.com/user/coach_feedback_failures\"",
+        "aggregations": [
+          {"alignmentPeriod": "300s", "perSeriesAligner": "ALIGN_SUM", "crossSeriesReducer": "REDUCE_SUM"}
+        ],
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 0,
+        "duration": "0s"
+      }
+    }
+  ],
+  "alertStrategy": {"autoClose": "1800s"}
+}

@@ -1,0 +1,59 @@
+{
+  "conversations": 200,
+  "concurrency": 40,
+  "turns_per_conversation": 4,
+  "wall_time_s": 9.54,
+  "replies": 800,
+  "user_visible_errors": 0,
+  "degraded_replies": 0,
+  "fallback_replies": 153,
+  "failed_provider_calls": 261,
+  "feedback_repairs": 17,
+  "ttft_ms": {
+    "p50": 83.01946349990885,
+    "p95": 171.0973748001265,
+    "p99": 209.58614244995482
+  },
+  "reply_ms": {
+    "p50": 161.75260149998394,
+    "p95": 263.65312414997095
+  },
+  "feedback_ms": {
+    "p50": 706.1866730000474,
+    "p95": 2783.4113817999987
+  },
+  "cost_per_conversation_usd": {
+    "mean": 0.004401045,
+    "p95": 0.006894199999999999
+  },
+  "experiment_report": {
+    "control": "control",
+    "treatment": "realism_v2",
+    "n_control": 85,
+    "n_treatment": 115,
+    "mean_control": 3.2541,
+    "mean_treatment": 3.2609,
+    "diff": 0.0068,
+    "diff_ci": [
+      -0.12952429667519086,
+      0.13954475703324745
+    ],
+    "p_value": 0.9219,
+    "srm_p_value": 0.0339,
+    "guardrail_rel_change": 0.0303,
+    "guardrail_rel_ci": [
+      -0.02736663951685367,
+      0.08890178356081282
+    ],
+    "decision": "keep_running",
+    "reason": "below the planned 369 units per arm; do not decide yet",
+    "n_per_arm_for_min_effect": 369
+  },
+  "injected": {
+    "primary_failure_rate": 0.2,
+    "malformed_json_rate": 0.1,
+    "mock_latency_ms": 60,
+    "rate_limit_rpm": 6000,
+    "realtime_priority": true
+  }
+}

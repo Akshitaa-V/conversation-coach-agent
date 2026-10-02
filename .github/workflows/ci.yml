@@ -1,0 +1,67 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Lint
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Unit and API tests
+        run: pytest -q
+      - name: Offline eval (regression gate)
+        run: |
+          python -m evals.run_eval --judge keyword
+          python -m evals.check_regression reports/eval_keyword-baseline.json evals/baseline_keyword.json
+      - name: A/B pipeline check on planted effects
+        run: |
+          python -m experiments.simulate_ab --runs 100
+          python -c "import json,sys; c=json.load(open('reports/ab_simulation.json'))['cases']; bad=[x['case'] for x in c if not x['correct']]; sys.exit(f'wrong decisions: {bad}' if bad else 0)"
+      - name: Load test with injected provider failures
+        run: |
+          python -m loadtest.run_load --conversations 60 --concurrency 15
+          python -c "import json,sys; r=json.load(open('reports/load_test.json')); sys.exit('user-visible errors' if r['user_visible_errors'] else 0)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: reports/
+
+  typescript-client:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clients/ts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+      - run: npm run build
+
+  image:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build container image
+        run: docker build -t conversation-coach-agent:ci .
+      - name: Smoke test the image
+        run: |
+          docker run -d --name coach -p 8080:8080 -e PROVIDER_MODE=mock conversation-coach-agent:ci
+          for i in $(seq 1 30); do curl -sf localhost:8080/healthz && break; sleep 1; done
+          curl -sf localhost:8080/readyz
+          docker logs coach | head -n 20

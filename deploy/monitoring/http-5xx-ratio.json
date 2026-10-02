@@ -1,0 +1,27 @@
+{
+  "displayName": "Coach: 5xx ratio above 2%",
+  "documentation": {
+    "content": "More than 2% of requests to SERVICE_NAME returned 5xx for 5 minutes. Check the 'llm call failed' and 'feedback failed' logs: if every model in a chain is failing, a vendor is down or a key has expired. Runbook: README > Operations.",
+    "mimeType": "text/markdown"
+  },
+  "combiner": "OR",
+  "conditions": [
+    {
+      "displayName": "5xx / all requests > 0.02",
+      "conditionThreshold": {
+        "filter": "resource.type = \"cloud_run_revision\" AND resource.labels.service_name = \"SERVICE_NAME\" AND metric.type = \"run.googleapis.com/request_count\" AND metric.labels.response_code_class = \"5xx\"",
+        "aggregations": [
+          {"alignmentPeriod": "60s", "perSeriesAligner": "ALIGN_RATE", "crossSeriesReducer": "REDUCE_SUM"}
+        ],
+        "denominatorFilter": "resource.type = \"cloud_run_revision\" AND resource.labels.service_name = \"SERVICE_NAME\" AND metric.type = \"run.googleapis.com/request_count\"",
+        "denominatorAggregations": [
+          {"alignmentPeriod": "60s", "perSeriesAligner": "ALIGN_RATE", "crossSeriesReducer": "REDUCE_SUM"}
+        ],
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 0.02,
+        "duration": "300s"
+      }
+    }
+  ],
+  "alertStrategy": {"autoClose": "1800s"}
+}

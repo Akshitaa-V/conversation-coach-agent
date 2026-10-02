@@ -1,0 +1,9 @@
+{
+  "judge": "keyword-baseline",
+  "overall": {
+    "exact": 0.6667,
+    "within_1": 0.6667,
+    "qwk": 0.4972,
+    "spearman_total": 0.5401
+  }
+}

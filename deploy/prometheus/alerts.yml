@@ -1,0 +1,53 @@
+# Prometheus alerting rules for the /metrics endpoint.
+# Use with a local Prometheus, or on Cloud Run with the Managed Service for
+# Prometheus sidecar (Google Cloud Managed Service for Prometheus), which scrapes
+# /metrics and evaluates rules like these.
+groups:
+  - name: conversation-coach
+    rules:
+      - alert: CoachTimeToFirstTokenHigh
+        expr: histogram_quantile(0.95, sum by (le) (rate(coach_ws_time_to_first_token_seconds_bucket[5m]))) > 1
+        for: 10m
+        labels: {severity: page}
+        annotations:
+          summary: "p95 time to first customer token above 1 s"
+          description: "Roleplays feel laggy. Check the primary customer model's latency and whether traffic moved to a slower fallback."
+
+      - alert: CoachFallbackRateHigh
+        expr: sum(rate(coach_llm_fallbacks_total[10m])) / sum(rate(coach_llm_requests_total{outcome="ok"}[10m])) > 0.25
+        for: 15m
+        labels: {severity: ticket}
+        annotations:
+          summary: "More than 25% of LLM answers come from a fallback model"
+          description: "The primary model is degraded or rate limited. Users are served, but cost and quality may differ."
+
+      - alert: CoachCircuitBreakerOpen
+        expr: max by (model) (coach_breaker_open) == 1
+        for: 5m
+        labels: {severity: ticket}
+        annotations:
+          summary: "Circuit breaker open for {{ $labels.model }}"
+
+      - alert: CoachDegradedReplies
+        expr: sum(rate(coach_degraded_replies_total[5m])) > 0
+        for: 5m
+        labels: {severity: page}
+        annotations:
+          summary: "Customer replies are being served from the canned fallback"
+          description: "Every model in the customer chain failed. Trainees see 'could you repeat that?'."
+
+      - alert: CoachCostPerConversationHigh
+        expr: histogram_quantile(0.95, sum by (le) (rate(coach_conversation_cost_usd_bucket[1h]))) > 0.02
+        for: 30m
+        labels: {severity: ticket}
+        annotations:
+          summary: "p95 LLM cost per conversation above $0.02"
+          description: "Check for longer conversations, more repairs, or traffic moved to a pricier fallback model."
+
+      - alert: CoachJudgeDisagreement
+        expr: histogram_quantile(0.5, sum by (le) (rate(coach_online_judge_gap_bucket[6h]))) > 1
+        for: 1h
+        labels: {severity: ticket}
+        annotations:
+          summary: "Coach and the independent judge disagree by more than 1 point (median)"
+          description: "Feedback quality may have drifted after a prompt or model change. Pull the sampled sessions and review."

@@ -1,0 +1,23 @@
+{
+  "displayName": "Coach: LLM call failures above 1 per second",
+  "documentation": {
+    "content": "Provider calls from SERVICE_NAME are failing at more than 1 per second (before retries and fallbacks). Users may still be fine thanks to fallbacks, but cost and latency rise. Check which model fails in the logs (jsonPayload.model) and whether its circuit breaker is open.",
+    "mimeType": "text/markdown"
+  },
+  "combiner": "OR",
+  "conditions": [
+    {
+      "displayName": "coach_llm_failures rate > 1/s",
+      "conditionThreshold": {
+        "filter": "resource.type = \"cloud_run_revision\" AND metric.type = \"logging.googleapis.com/user/coach_llm_failures\"",
+        "aggregations": [
+          {"alignmentPeriod": "60s", "perSeriesAligner": "ALIGN_RATE", "crossSeriesReducer": "REDUCE_SUM"}
+        ],
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 1,
+        "duration": "300s"
+      }
+    }
+  ],
+  "alertStrategy": {"autoClose": "1800s"}
+}

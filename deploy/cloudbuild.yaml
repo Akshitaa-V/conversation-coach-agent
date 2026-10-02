@@ -1,0 +1,18 @@
+# Build and push the container image with Cloud Build.
+#   gcloud builds submit --config deploy/cloudbuild.yaml --substitutions=_REGION=europe-west3,_TAG=v1
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/conversation-coach-agent:${_TAG}
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/conversation-coach-agent:latest
+      - .
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/conversation-coach-agent:${_TAG}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/conversation-coach-agent:latest
+substitutions:
+  _REGION: europe-west3
+  _REPO: coach
+  _TAG: manual
+options:
+  logging: CLOUD_LOGGING_ONLY
